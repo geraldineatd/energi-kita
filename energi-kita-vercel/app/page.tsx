@@ -2,109 +2,54 @@
 
 import { useMemo, useState } from "react";
 
-const cards = [
-  { icon: "☀️", title: "Energi Surya", color: "sun", front: "Cahaya matahari diubah menjadi listrik dengan panel surya.", back: "Contoh: lampu jalan tenaga surya dan PLTS atap.\n\nKelebihan: melimpah dan tidak menghasilkan asap saat digunakan.\n\nTantangan: produksi listrik berkurang saat mendung atau malam." },
-  { icon: "💨", title: "Energi Angin", color: "wind", front: "Gerakan angin memutar turbin untuk menghasilkan listrik.", back: "Contoh: PLTB Sidrap di Sulawesi Selatan.\n\nKelebihan: bersih dan dapat diperbarui.\n\nTantangan: membutuhkan wilayah dengan angin yang cukup stabil." },
-  { icon: "💧", title: "Energi Air", color: "water", front: "Aliran atau jatuhan air memutar turbin pembangkit listrik.", back: "Contoh: PLTA, PLTMH, dan turbin pada bendungan.\n\nKelebihan: dapat menghasilkan listrik dengan stabil.\n\nTantangan: pembangunan harus memperhatikan ekosistem sungai." },
-  { icon: "🌿", title: "Biomassa", color: "bio", front: "Bahan organik seperti sisa tanaman dan kotoran ternak diolah menjadi energi.", back: "Contoh: biogas dari kotoran ternak dan briket dari limbah pertanian.\n\nKelebihan: memanfaatkan limbah.\n\nTantangan: harus dikelola agar tidak menyebabkan polusi atau penggundulan hutan." },
-  { icon: "🌋", title: "Panas Bumi", color: "geo", front: "Panas dari dalam bumi dimanfaatkan untuk menghasilkan listrik.", back: "Indonesia memiliki potensi besar karena berada di kawasan gunung api.\n\nKelebihan: dapat beroperasi siang dan malam.\n\nTantangan: hanya tersedia di lokasi tertentu dan biaya awalnya tinggi." },
+type Topic = {
+  id: string; icon: string; name: string; color: string; short: string;
+  definition: string; process: string[]; examples: string[]; strengths: string[]; limits: string[]; fact: string;
+};
+
+const topics: Topic[] = [
+  { id:"surya",icon:"☀️",name:"Energi Surya",color:"#ffb72b",short:"Cahaya matahari diubah menjadi panas atau listrik.",definition:"Energi surya berasal dari radiasi matahari. Panel fotovoltaik mengubah cahaya langsung menjadi listrik, sedangkan kolektor surya memanfaatkan panasnya.",process:["Cahaya mengenai sel surya","Elektron bergerak dan menghasilkan arus DC","Inverter mengubahnya menjadi arus AC","Listrik digunakan atau disimpan dalam baterai"],examples:["PLTS atap","Lampu jalan surya","Kalkulator surya"],strengths:["Sumbernya melimpah","Tidak menghasilkan asap saat digunakan","Dapat dipasang dari skala rumah hingga pembangkit"],limits:["Produksi dipengaruhi cuaca","Tidak menghasilkan listrik pada malam hari tanpa baterai","Membutuhkan area pemasangan"],fact:"Indonesia berada dekat khatulistiwa sehingga menerima sinar matahari sepanjang tahun." },
+  { id:"angin",icon:"💨",name:"Energi Angin",color:"#72c5df",short:"Gerakan udara memutar turbin dan generator.",definition:"Angin terbentuk karena pemanasan permukaan bumi yang tidak merata. Energi geraknya dapat ditangkap oleh baling-baling turbin.",process:["Angin memutar bilah turbin","Poros turbin ikut berputar","Generator mengubah gerak menjadi listrik","Transformator menyalurkan listrik ke jaringan"],examples:["PLTB Sidrap","Kincir angin pemompa air","Turbin angin lepas pantai"],strengths:["Tidak membutuhkan bahan bakar","Emisi operasional rendah","Lahan di sekitar turbin masih dapat dimanfaatkan"],limits:["Membutuhkan angin stabil","Suara dan lokasi perlu direncanakan","Produksi dapat berubah-ubah"],fact:"PLTB Sidrap merupakan salah satu pembangkit listrik tenaga angin besar di Indonesia." },
+  { id:"air",icon:"💧",name:"Energi Air",color:"#4ba8df",short:"Aliran air memutar turbin untuk menghasilkan listrik.",definition:"Energi air memanfaatkan gerakan air akibat aliran sungai, perbedaan ketinggian, gelombang, atau pasang surut.",process:["Air dialirkan melalui saluran","Tekanan air memutar turbin","Turbin menggerakkan generator","Air dikembalikan ke aliran sungai"],examples:["PLTA bendungan","PLTMH di desa","Turbin arus sungai"],strengths:["Dapat menghasilkan listrik dengan stabil","Teknologinya sudah matang","PLTMH cocok untuk wilayah terpencil"],limits:["Dipengaruhi ketersediaan air","Bendungan dapat mengubah ekosistem","Biaya pembangunan awal cukup besar"],fact:"Pembangkit mikrohidro dapat memanfaatkan sungai kecil tanpa bendungan besar." },
+  { id:"biomassa",icon:"🌿",name:"Biomassa",color:"#83bd51",short:"Bahan organik diolah menjadi panas, gas, atau bahan bakar.",definition:"Biomassa adalah bahan dari makhluk hidup atau sisa aktivitasnya, seperti limbah pertanian, kayu, sampah organik, dan kotoran ternak.",process:["Bahan organik dikumpulkan","Bahan diolah melalui pembakaran, fermentasi, atau gasifikasi","Dihasilkan panas, biogas, atau biofuel","Energi digunakan untuk memasak, kendaraan, atau listrik"],examples:["Biogas kotoran ternak","Briket sekam padi","Biodiesel"],strengths:["Memanfaatkan limbah","Dapat disimpan dan digunakan saat diperlukan","Mendukung ekonomi lokal"],limits:["Pembakaran yang buruk menimbulkan polusi","Budidaya bahan baku dapat bersaing dengan pangan","Harus dikelola agar tidak mendorong deforestasi"],fact:"Sisa makanan juga dapat diolah dalam biodigester untuk menghasilkan biogas." },
+  { id:"panas",icon:"🌋",name:"Panas Bumi",color:"#ef7c50",short:"Panas dari dalam bumi dimanfaatkan siang dan malam.",definition:"Energi panas bumi berasal dari panas di bawah permukaan bumi. Uap atau air panas dari reservoir digunakan untuk memutar turbin.",process:["Sumur dibor menuju reservoir panas","Uap atau air panas dinaikkan","Uap memutar turbin dan generator","Air dikembalikan ke dalam tanah"],examples:["PLTP Kamojang","Pemandian air panas","Pemanasan langsung"],strengths:["Dapat beroperasi 24 jam","Membutuhkan lahan relatif kecil","Indonesia memiliki potensi besar"],limits:["Hanya tersedia di wilayah tertentu","Eksplorasi awal mahal dan berisiko","Pembangunan harus menjaga lingkungan sekitar"],fact:"Letak Indonesia di Cincin Api membuat potensi panas buminya sangat besar." },
 ];
 
 const quiz = [
-  { q: "Sumber energi yang tidak akan habis dalam waktu singkat disebut…", options: ["Energi fosil", "Energi terbarukan", "Energi kimia", "Energi buatan"], answer: 1, fact: "Energi terbarukan berasal dari proses alam yang terus tersedia atau dapat pulih kembali." },
-  { q: "Alat yang mengubah cahaya matahari menjadi listrik adalah…", options: ["Turbin air", "Panel surya", "Baterai", "Generator diesel"], answer: 1, fact: "Sel fotovoltaik pada panel surya mengubah cahaya menjadi energi listrik." },
-  { q: "Manakah contoh pemanfaatan biomassa?", options: ["Bensin untuk motor", "Batu bara untuk PLTU", "Biogas dari kotoran ternak", "Panel surya di atap"], answer: 2, fact: "Biogas dapat dibuat dari penguraian bahan organik tanpa oksigen." },
-  { q: "Mengapa energi fosil perlu dikurangi?", options: ["Cepat diperbarui", "Tidak menghasilkan emisi", "Persediaannya terbatas dan menghasilkan emisi", "Hanya dapat dipakai malam hari"], answer: 2, fact: "Batu bara, minyak, dan gas terbentuk sangat lama serta melepaskan gas rumah kaca saat dibakar." },
-  { q: "Tindakan hemat energi yang tepat di sekolah adalah…", options: ["Menyalakan semua lampu", "Membuka kulkas terus-menerus", "Mematikan proyektor setelah digunakan", "Mengisi daya sepanjang malam"], answer: 2, fact: "Energi paling bersih adalah energi yang tidak perlu kita gunakan. Hemat energi dimulai dari kebiasaan kecil." },
+  {q:"Apa pembeda utama energi terbarukan dan energi fosil?",o:["Warnanya","Kemampuan sumbernya untuk pulih kembali","Harganya selalu murah","Hanya tersedia di desa"],a:1,e:"Energi terbarukan berasal dari proses alam yang terus berlangsung atau dapat pulih dalam skala waktu manusia."},
+  {q:"Mengapa panel surya tetap membutuhkan baterai pada sistem tertentu?",o:["Agar panel berwarna cerah","Untuk menyimpan listrik saat produksi berlebih","Untuk membuat angin","Agar panel tidak terkena hujan"],a:1,e:"Baterai menyimpan energi agar listrik dapat digunakan ketika cahaya matahari berkurang atau malam hari."},
+  {q:"Pilihan paling sesuai untuk desa dengan sungai kecil yang mengalir sepanjang tahun adalah…",o:["PLTU batu bara","PLTMH","Pembangkit diesel","Bensin"],a:1,e:"Pembangkit listrik tenaga mikrohidro dapat memanfaatkan aliran sungai berskala kecil."},
+  {q:"Manakah yang termasuk bahan baku biomassa?",o:["Uranium","Sinar matahari","Sekam padi","Minyak bumi"],a:2,e:"Sekam padi merupakan limbah pertanian organik yang dapat diolah menjadi briket atau energi lainnya."},
+  {q:"Mengapa panas bumi disebut sumber yang stabil?",o:["Hanya muncul saat hujan","Dapat beroperasi siang dan malam","Tidak membutuhkan turbin","Tersedia di semua tempat"],a:1,e:"Panas dari dalam bumi tidak bergantung pada cuaca harian sehingga pembangkit dapat bekerja terus-menerus."},
 ];
 
-export default function Home() {
-  const [flipped, setFlipped] = useState<number[]>([]);
-  const [question, setQuestion] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [started, setStarted] = useState(false);
-  const [pledges, setPledges] = useState<string[]>([]);
-  const [pledge, setPledge] = useState("");
-  const score = useMemo(() => answers.filter((a, i) => a === quiz[i].answer).length, [answers]);
+const scenarios = [
+  {place:"Sekolah di daerah panas dengan atap luas",icon:"🏫",answer:"surya",reason:"Atap luas dan paparan matahari cocok untuk memasang panel surya tanpa membutuhkan lahan baru."},
+  {place:"Desa pegunungan dengan sungai mengalir sepanjang tahun",icon:"🏞️",answer:"air",reason:"Aliran dan beda ketinggian dapat dimanfaatkan sebagai mikrohidro dengan perencanaan lingkungan yang baik."},
+  {place:"Peternakan dengan banyak limbah kotoran ternak",icon:"🐄",answer:"biomassa",reason:"Limbah organik dapat dimasukkan ke biodigester untuk menghasilkan biogas sekaligus mengurangi limbah."},
+];
 
-  const choose = (i: number) => {
-    if (selected !== null) return;
-    setSelected(i);
-  };
-  const next = () => {
-    if (selected === null) return;
-    const updated = [...answers, selected];
-    setAnswers(updated);
-    if (question < quiz.length - 1) { setQuestion(question + 1); setSelected(null); }
-    else setQuestion(quiz.length);
-  };
-  const restart = () => { setQuestion(0); setAnswers([]); setSelected(null); };
-
-  return (
-    <main>
-      <nav className="nav">
-        <a href="#awal" className="brand"><span>⚡</span> ENERGI KITA</a>
-        <div className="navlinks"><a href="#jelajah">Jelajah</a><a href="#flashcard">Flashcard</a><a href="#kuis">Kuis</a></div>
-        <a href="#kuis" className="navCta">Mulai Kuis <span>→</span></a>
-      </nav>
-
-      <section className="hero" id="awal">
-        <div className="heroCopy">
-          <div className="eyebrow">🌱 BELAJAR ENERGI, JAGA BUMI</div>
-          <h1>Kenali Energi<br/><em>untuk Masa Depan</em></h1>
-          <p>Dari cahaya matahari hingga aliran air—jelajahi sumber energi bersih yang ada di sekitar kita.</p>
-          <div className="heroActions"><a href="#jelajah" className="primary">Mulai Menjelajah <span>↓</span></a><span className="time">◷ &nbsp;15 menit belajar</span></div>
-        </div>
-        <div className="heroVisual" aria-label="Ilustrasi bumi dan energi terbarukan">
-          <div className="orbit orbit1"></div><div className="orbit orbit2"></div>
-          <div className="planet"><span>🌏</span></div>
-          <div className="float sunFloat">☀️<small>SURYA</small></div>
-          <div className="float windFloat">💨<small>ANGIN</small></div>
-          <div className="float waterFloat">💧<small>AIR</small></div>
-          <div className="leaf l1">🌿</div><div className="leaf l2">🍃</div>
-        </div>
-        <div className="scrollHint">GULIR UNTUK JELAJAHI <span>↓</span></div>
-      </section>
-
-      <section className="intro" id="jelajah">
-        <div><span className="sectionNo">01 — KENALAN DULU</span><h2>Apa itu energi<br/>terbarukan?</h2></div>
-        <div className="introText"><p>Energi terbarukan berasal dari sumber alam yang <strong>terus tersedia atau dapat pulih kembali</strong>, seperti sinar matahari, angin, air, panas bumi, dan biomassa.</p><div className="compare"><span className="good">✓ Dapat diperbarui</span><span className="bad">× Fosil terbatas</span></div></div>
-      </section>
-
-      <section className="cardsSection" id="flashcard">
-        <div className="sectionHead"><div><span className="sectionNo light">02 — KLIK & TEMUKAN</span><h2>Lima sumber energi bersih</h2></div><p>Klik kartu untuk membalik dan membaca contoh, kelebihan, serta tantangannya.</p></div>
-        <div className="cards">
-          {cards.map((card, i) => <button key={card.title} className={`energyCard ${card.color} ${flipped.includes(i) ? "isFlipped" : ""}`} onClick={() => setFlipped(f => f.includes(i) ? f.filter(x => x !== i) : [...f, i])} aria-label={`Balik kartu ${card.title}`}>
-            <div className="cardInner"><div className="cardFace front"><span className="cardNum">0{i+1}</span><div className="cardIcon">{card.icon}</div><h3>{card.title}</h3><p>{card.front}</p><span className="flipLabel">KLIK UNTUK BALIK ↗</span></div><div className="cardFace back"><span className="cardNum">0{i+1}</span><h3>{card.title}</h3><p>{card.back}</p><span className="flipLabel">KLIK UNTUK KEMBALI ↙</span></div></div>
-          </button>)}
-        </div>
-      </section>
-
-      <section className="impact">
-        <div className="impactTitle"><span className="sectionNo">03 — KENAPA PENTING?</span><h2>Pilihan energi kita<br/>berpengaruh pada bumi.</h2></div>
-        <div className="impactGrid"><article><b>01</b><span>🌬️</span><h3>Udara Lebih Bersih</h3><p>Lebih sedikit asap dan polusi dari pembakaran bahan bakar fosil.</p></article><article><b>02</b><span>🌡️</span><h3>Kurangi Emisi</h3><p>Membantu menekan gas rumah kaca penyebab perubahan iklim.</p></article><article><b>03</b><span>♾️</span><h3>Tersedia Kembali</h3><p>Sumbernya terus hadir melalui proses alam yang berulang.</p></article></div>
-      </section>
-
-      <section className="quizSection" id="kuis">
-        <div className="quizInfo"><span className="sectionNo light">04 — UJI PEMAHAMAN</span><h2>Siap jadi<br/>Pahlawan Energi?</h2><p>Lima pertanyaan singkat untuk menguji apa yang sudah kamu pelajari.</p><div className="quizMeta"><span>5 SOAL</span><span>± 3 MENIT</span></div></div>
-        <div className="quizBox">
-          {!started ? <div className="quizStart"><div className="bolt">⚡</div><h3>Tantangan Energi</h3><p>Pilih satu jawaban terbaik. Kamu akan langsung melihat penjelasannya.</p><button onClick={() => setStarted(true)}>Mulai Kuis <span>→</span></button></div> : question < quiz.length ? <>
-            <div className="progress"><span>SOAL {question+1} DARI {quiz.length}</span><div><i style={{width: `${((question+1)/quiz.length)*100}%`}}></i></div></div>
-            <h3 className="question">{quiz[question].q}</h3>
-            <div className="options">{quiz[question].options.map((o,i) => <button key={o} onClick={() => choose(i)} className={selected === null ? "" : i === quiz[question].answer ? "correct" : i === selected ? "wrong" : "muted"}><b>{String.fromCharCode(65+i)}</b>{o}<span>{selected !== null && i === quiz[question].answer ? "✓" : selected === i ? "×" : ""}</span></button>)}</div>
-            {selected !== null && <div className={`feedback ${selected === quiz[question].answer ? "yes" : "no"}`}><strong>{selected === quiz[question].answer ? "Tepat!" : "Belum tepat."}</strong> {quiz[question].fact}</div>}
-            <button className="next" disabled={selected === null} onClick={next}>{question === quiz.length-1 ? "Lihat Hasil" : "Soal Berikutnya"} →</button>
-          </> : <div className="result"><div className="scoreRing"><strong>{score}</strong><span>/ {quiz.length}</span></div><h3>{score === 5 ? "Luar biasa!" : score >= 3 ? "Kerja bagus!" : "Yuk, pelajari lagi!"}</h3><p>Kamu menjawab {score} dari {quiz.length} soal dengan benar.</p><button onClick={restart}>Ulangi Kuis ↻</button></div>}
-        </div>
-      </section>
-
-      <section className="action">
-        <span className="sectionNo">05 — AKSI KECILMU</span><h2>Energi masa depan<br/>dimulai dari <em>kita.</em></h2><p>Tuliskan satu kebiasaan hemat energi yang akan kamu lakukan mulai hari ini.</p>
-        <form onSubmit={e => {e.preventDefault(); if(pledge.trim()){setPledges([pledge.trim(), ...pledges].slice(0,4));setPledge("")}}}><input value={pledge} onChange={e=>setPledge(e.target.value)} placeholder="Contoh: mematikan lampu saat tidak digunakan" maxLength={80}/><button>Kirim Aksi ⚡</button></form>
-        {pledges.length > 0 && <div className="pledges">{pledges.map((p,i)=><span key={i}>🌱 “{p}”</span>)}</div>}
-      </section>
-      <footer><div className="brand"><span>⚡</span> ENERGI KITA</div><p>Media belajar interaktif energi terbarukan untuk siswa SMP.</p><a href="#awal">KEMBALI KE ATAS ↑</a></footer>
-    </main>
-  );
+export default function Home(){
+  const [view,setView]=useState<"home"|"learn"|"cards"|"lab"|"quiz">("home");
+  const [topic,setTopic]=useState(topics[0]); const [completed,setCompleted]=useState<string[]>([]);
+  const [flipped,setFlipped]=useState<string[]>([]); const [scenario,setScenario]=useState(0); const [choice,setChoice]=useState<string|null>(null);
+  const [qi,setQi]=useState(0); const [selected,setSelected]=useState<number|null>(null); const [answers,setAnswers]=useState<number[]>([]);
+  const score=useMemo(()=>answers.filter((a,i)=>a===quiz[i].a).length,[answers]);
+  const progress=Math.round((completed.length/topics.length)*100);
+  const go=(v:typeof view)=>{setView(v);window.scrollTo({top:0,behavior:"smooth"})};
+  const mark=()=>setCompleted(c=>c.includes(topic.id)?c:[...c,topic.id]);
+  const nextQuiz=()=>{if(selected===null)return;const all=[...answers,selected];setAnswers(all);setSelected(null);setQi(i=>i+1)};
+  return <main>
+    <nav><button className="logo" onClick={()=>go("home")}><span>⚡</span>ENERGI KITA</button><div className="navlinks"><button onClick={()=>go("learn")}>Materi</button><button onClick={()=>go("cards")}>Flashcard</button><button onClick={()=>go("lab")}>Lab Energi</button><button onClick={()=>go("quiz")}>Kuis</button></div><button className="navCta" onClick={()=>go("learn")}>Mulai Belajar →</button></nav>
+    {view==="home"&&<>
+      <section className="hero"><div className="heroCopy"><div className="tag">🌱 MEDIA BELAJAR INTERAKTIF</div><h1>Energi bersih untuk<br/><em>masa depan kita.</em></h1><p>Pelajari bagaimana matahari, angin, air, biomassa, dan panas bumi dapat membantu memenuhi kebutuhan energi tanpa menghabiskan sumber daya alam.</p><div className="actions"><button className="primary" onClick={()=>go("learn")}>Mulai Petualangan <span>→</span></button><button className="ghost" onClick={()=>go("cards")}>Coba Flashcard</button></div><div className="mini"><span><b>5</b> sumber energi</span><span><b>±20</b> menit belajar</span><span><b>10+</b> interaksi</span></div></div><div className="heroArt"><div className="ring r1"/><div className="ring r2"/><div className="earth">🌏</div><span className="orb sun">☀️</span><span className="orb wind">💨</span><span className="orb drop">💧</span><span className="spark s1">✦</span><span className="spark s2">✦</span></div></section>
+      <section className="path"><div><span className="kicker">PILIH CARA BELAJARMU</span><h2>Tidak perlu membaca<br/>semuanya sekaligus.</h2></div><div className="pathGrid"><button onClick={()=>go("learn")}><b>01</b><span>📚</span><h3>Jelajahi Materi</h3><p>Buka lima sumber energi satu per satu dan tandai progresmu.</p><i>Mulai →</i></button><button onClick={()=>go("cards")}><b>02</b><span>🃏</span><h3>Mainkan Flashcard</h3><p>Balik kartu untuk mengingat konsep, manfaat, dan tantangan.</p><i>Buka kartu →</i></button><button onClick={()=>go("lab")}><b>03</b><span>🧪</span><h3>Masuk Lab Energi</h3><p>Pilih energi paling tepat untuk menyelesaikan kasus nyata.</p><i>Coba simulasi →</i></button></div></section>
+      <section className="why"><span className="kicker">KENAPA HARUS PEDULI?</span><div><h2>Energi ada di balik hampir semua aktivitas kita.</h2><p>Namun sebagian besar energi dunia masih berasal dari bahan bakar fosil yang terbatas dan menghasilkan emisi gas rumah kaca. Mengenal alternatifnya adalah langkah awal untuk membuat keputusan yang lebih bijak.</p></div><button onClick={()=>go("learn")}>Pelajari perbedaannya →</button></section>
+    </>}
+    {view==="learn"&&<section className="workspace"><header className="pageHead"><div><span className="kicker">RUANG BELAJAR</span><h1>Jelajahi sumber energi</h1><p>Pilih topik, baca secara bertahap, lalu tandai sebagai selesai.</p></div><div className="progressCard"><span>PROGRES BELAJAR</span><strong>{progress}%</strong><div><i style={{width:`${progress}%`}}/></div><small>{completed.length} dari {topics.length} topik selesai</small></div></header><div className="topicTabs">{topics.map(t=><button key={t.id} className={topic.id===t.id?"active":""} onClick={()=>setTopic(t)}><span>{t.icon}</span>{t.name}{completed.includes(t.id)&&<b>✓</b>}</button>)}</div><article className="lesson" style={{"--accent":topic.color} as React.CSSProperties}><div className="lessonHero"><div className="bigIcon">{topic.icon}</div><div><span className="lessonLabel">SUMBER ENERGI TERBARUKAN</span><h2>{topic.name}</h2><p>{topic.definition}</p></div></div><div className="lessonGrid"><div className="process"><span className="sub">BAGAIMANA CARA KERJANYA?</span>{topic.process.map((p,i)=><div key={p}><b>{i+1}</b><p>{p}</p></div>)}</div><div className="fact"><span>💡 TAHUKAH KAMU?</span><p>{topic.fact}</p></div><div><span className="sub">CONTOH PEMANFAATAN</span><ul>{topic.examples.map(x=><li key={x}>✓ {x}</li>)}</ul></div><div><span className="sub goodText">KELEBIHAN</span><ul>{topic.strengths.map(x=><li key={x}>+ {x}</li>)}</ul></div><div><span className="sub warnText">TANTANGAN</span><ul>{topic.limits.map(x=><li key={x}>! {x}</li>)}</ul></div></div><div className="lessonFoot"><button className={completed.includes(topic.id)?"done":""} onClick={mark}>{completed.includes(topic.id)?"✓ Sudah dipelajari":"Tandai sudah dipelajari"}</button><button onClick={()=>{const i=topics.findIndex(t=>t.id===topic.id);setTopic(topics[(i+1)%topics.length])}}>Topik berikutnya →</button></div></article></section>}
+    {view==="cards"&&<section className="workspace dark"><header className="pageHead"><div><span className="kicker lime">FLASHCARD</span><h1>Balik, baca, ingat.</h1><p>Klik setiap kartu untuk melihat informasi lengkapnya.</p></div><div className="cardCount">{flipped.length}/{topics.length}<small>kartu dibuka</small></div></header><div className="flashGrid">{topics.map((t,i)=><button key={t.id} className={`flash ${flipped.includes(t.id)?"flipped":""}`} onClick={()=>setFlipped(f=>f.includes(t.id)?f.filter(x=>x!==t.id):[...f,t.id])}><div className="flashInner"><div className="face front"><b>0{i+1}</b><span>{t.icon}</span><h3>{t.name}</h3><p>{t.short}</p><small>KLIK UNTUK BALIK ↗</small></div><div className="face back"><b>INTI MATERI</b><h3>{t.name}</h3><p><strong>Kelebihan:</strong> {t.strengths[0]}.</p><p><strong>Tantangan:</strong> {t.limits[0]}.</p><p><strong>Contoh:</strong> {t.examples.join(", ")}.</p><small>KLIK UNTUK KEMBALI ↙</small></div></div></button>)}</div><button className="quizLink" onClick={()=>go("quiz")}>Sudah hafal? Uji pemahamanmu →</button></section>}
+    {view==="lab"&&<section className="workspace lab"><header className="pageHead"><div><span className="kicker">LAB ENERGI</span><h1>Energi apa yang paling tepat?</h1><p>Analisis kondisi setiap tempat. Ingat: tidak ada satu sumber energi yang cocok untuk semua lokasi.</p></div></header><div className="simulator"><div className="case"><span>KASUS {scenario+1} DARI {scenarios.length}</span><div className="caseIcon">{scenarios[scenario].icon}</div><h2>{scenarios[scenario].place}</h2><p>Pilih sumber energi yang paling sesuai berdasarkan potensi alam dan kebutuhan di tempat tersebut.</p></div><div className="choices">{topics.map(t=><button key={t.id} onClick={()=>setChoice(t.id)} className={choice? t.id===scenarios[scenario].answer?"right":t.id===choice?"wrong":"muted":""}><span>{t.icon}</span>{t.name}<b>{choice&&t.id===scenarios[scenario].answer?"✓":choice===t.id?"×":"→"}</b></button>)}{choice&&<div className={`explain ${choice===scenarios[scenario].answer?"yes":"no"}`}><strong>{choice===scenarios[scenario].answer?"Pilihan tepat!":"Coba pertimbangkan lagi."}</strong><p>{scenarios[scenario].reason}</p></div>}<button className="nextCase" disabled={!choice} onClick={()=>{setScenario((scenario+1)%scenarios.length);setChoice(null)}}>Kasus berikutnya →</button></div></div></section>}
+    {view==="quiz"&&<section className="workspace quizPage"><header className="pageHead"><div><span className="kicker">KUIS AKHIR</span><h1>Jadi Pahlawan Energi</h1><p>Jawab lima pertanyaan dan lihat penjelasan setiap jawaban.</p></div></header>{qi<quiz.length?<div className="quizBox"><div className="quizTop"><span>SOAL {qi+1} / {quiz.length}</span><div><i style={{width:`${((qi+1)/quiz.length)*100}%`}}/></div></div><h2>{quiz[qi].q}</h2><div className="answers">{quiz[qi].o.map((o,i)=><button key={o} disabled={selected!==null} onClick={()=>setSelected(i)} className={selected===null?"":i===quiz[qi].a?"correct":i===selected?"incorrect":"dim"}><b>{String.fromCharCode(65+i)}</b>{o}<span>{selected!==null&&i===quiz[qi].a?"✓":selected===i?"×":""}</span></button>)}</div>{selected!==null&&<div className="feedback"><strong>{selected===quiz[qi].a?"Tepat!":"Belum tepat."}</strong> {quiz[qi].e}</div>}<button className="nextQ" disabled={selected===null} onClick={nextQuiz}>{qi===quiz.length-1?"Lihat hasil":"Soal berikutnya"} →</button></div>:<div className="result"><div><strong>{score}</strong><span>/5</span></div><h2>{score===5?"Luar biasa!":score>=3?"Kerja bagus!":"Yuk, pelajari lagi!"}</h2><p>Kamu menjawab {score} pertanyaan dengan benar.</p><button onClick={()=>{setQi(0);setAnswers([]);setSelected(null)}}>Ulangi kuis ↻</button><button onClick={()=>go("learn")}>Kembali ke materi</button></div>}</section>}
+    <footer><button className="logo" onClick={()=>go("home")}><span>⚡</span>ENERGI KITA</button><p>Media belajar energi terbarukan untuk siswa SMP.</p><button onClick={()=>go("home")}>Beranda ↑</button></footer>
+  </main>
 }
