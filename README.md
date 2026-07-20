@@ -2,7 +2,7 @@
 
 Media belajar interaktif energi terbarukan untuk siswa SMP, dibuat dengan Next.js.
 
-## Menjalankan proyek
+## Menjalankan proyek 
 
 ```bash
 npm install
